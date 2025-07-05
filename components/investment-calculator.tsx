@@ -244,7 +244,10 @@ export function InvestmentCalculator() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto  space-y-4">
+    <div
+      className="max-w-4xl mx-auto space-y-4"
+      style={{ fontSize: `${fontSize}px` }}
+    >
       {/* 폰트 크기 조절 */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">
@@ -256,7 +259,7 @@ export function InvestmentCalculator() {
             className="p-2 bg-gray-200 dark:bg-slate-600 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-colors duration-300 border border-gray-300 dark:border-slate-500"
           >
             <Minus
-              size={20}
+              size={fontSize * 1.25}
               className="text-gray-700 dark:text-gray-200 transition-colors duration-300"
             />
           </button>
@@ -268,7 +271,7 @@ export function InvestmentCalculator() {
             className="p-2 bg-gray-200 dark:bg-slate-600 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-colors duration-300 border border-gray-300 dark:border-slate-500"
           >
             <Plus
-              size={20}
+              size={fontSize * 1.25}
               className="text-gray-700 dark:text-gray-200 transition-colors duration-300"
             />
           </button>
@@ -284,7 +287,7 @@ export function InvestmentCalculator() {
               }`}
             >
               <History
-                size={20}
+                size={fontSize * 1.25}
                 className={`transition-colors duration-300 ${
                   showHistory
                     ? 'text-blue-600 dark:text-blue-300'
@@ -293,10 +296,123 @@ export function InvestmentCalculator() {
               />
             </button>
             {history.length > 0 && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span
+                className="text-gray-500 dark:text-gray-400"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 {history.length}개
               </span>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* 사용 시나리오 설명 */}
+      {/* <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-yellow-200 dark:border-yellow-800">
+        <div className="flex items-center gap-2 mb-3">
+          <Lightbulb
+            size={fontSize * 1.25}
+            className="text-yellow-600 dark:text-yellow-400"
+          />
+          <h3
+            className="font-bold text-yellow-800 dark:text-yellow-200 transition-colors duration-300"
+            style={{ fontSize: `${fontSize * 1.125}px` }}
+          >
+            💡 계산 시나리오
+          </h3>
+        </div>
+        <div
+          className="text-yellow-700 dark:text-yellow-300 space-y-1 transition-colors duration-300"
+          style={{ fontSize: `${fontSize * 0.875}px` }}
+        >
+          <p>
+            1️⃣ 처음에 큰 금액으로 코인을 매수 (전체 투자금에 대해 매수 수수료
+            발생)
+          </p>
+          <p>2️⃣ 시간이 지나 코인 가격이 상승하여 수익이 발생</p>
+          <p>
+            3️⃣ 보유 중인 코인의 일부만 매도 (매도 금액에 대해서만 매도 수수료
+            발생)
+          </p>
+        </div>
+      </div> */}
+
+      {/* 계산 예시 */}
+      {/* <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-green-200 dark:border-green-800">
+        <div className="flex items-center gap-2 mb-3">
+          <BookOpen
+            size={fontSize * 1.25}
+            className="text-green-600 dark:text-green-400"
+          />
+          <h3
+            className="font-bold text-green-800 dark:text-green-200 transition-colors duration-300"
+            style={{ fontSize: `${fontSize * 1.125}px` }}
+          >
+            📋 계산 예시
+          </h3>
+        </div>
+        <div
+          className="text-green-700 dark:text-green-300 space-y-1 transition-colors duration-300"
+          style={{ fontSize: `${fontSize * 0.875}px` }}
+        >
+          <p>
+            • <strong>최초 매수:</strong> 5,000만원으로 비트코인 구매 → 매수
+            수수료: 25,000원
+          </p>
+          <p>
+            • <strong>현재 상황:</strong> 10% 상승하여 총 자산 가치 5,500만원
+          </p>
+          <p>
+            • <strong>일부 매도:</strong> 1,000만원어치만 매도 → 매도 수수료:
+            5,000원
+          </p>
+          <p>
+            • <strong>실제 수익:</strong> 약 90만원 (수수료 차감 후)
+          </p>
+        </div>
+      </div> */}
+
+      {/* 업비트 수수료 정보 */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center gap-2 mb-3">
+          <Calculator
+            size={fontSize * 1.25}
+            className="text-blue-600 dark:text-blue-400"
+          />
+          <h3
+            className="font-bold text-blue-800 dark:text-blue-200 transition-colors duration-300"
+            style={{ fontSize: `${fontSize * 1.125}px` }}
+          >
+            업비트 수수료 정보 (2025년 기준)
+          </h3>
+        </div>
+        <div
+          className="grid grid-cols-1 gap-4"
+          style={{ fontSize: `${fontSize * 0.875}px` }}
+        >
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
+              KRW 마켓
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              0.05% (할인 중) - 매수/매도 동일
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
+              BTC/USDT 마켓
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              0.25% - 매수/매도 동일
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
+              원화 출금
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              1,000원 고정
+            </div>
           </div>
         </div>
       </div>
@@ -305,13 +421,17 @@ export function InvestmentCalculator() {
       {showHistory && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
+            <h3
+              className="font-bold text-gray-800 dark:text-white transition-colors duration-300"
+              style={{ fontSize: `${fontSize * 1.125}px` }}
+            >
               계산 기록
             </h3>
             {history.length > 0 && (
               <button
                 onClick={clearAllHistory}
-                className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-300"
+                className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-300"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
               >
                 전체 삭제
               </button>
@@ -330,17 +450,23 @@ export function InvestmentCalculator() {
                   className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg border border-gray-200 dark:border-slate-600 transition-colors duration-300"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                    <span
+                      className="text-gray-500 dark:text-gray-400 transition-colors duration-300"
+                      style={{ fontSize: `${fontSize * 0.875}px` }}
+                    >
                       {new Date(item.timestamp).toLocaleString('ko-KR')}
                     </span>
                     <button
                       onClick={() => deleteHistoryItem(item.id)}
                       className="p-1 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-300"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={fontSize} />
                     </button>
                   </div>
-                  <div className="text-sm space-y-1">
+                  <div
+                    className="space-y-1"
+                    style={{ fontSize: `${fontSize * 0.875}px` }}
+                  >
                     <div className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
                       원금: {item.principal}원 | 수익률: {item.returnRate}% |
                       매도: {item.sellAmount}원 | 마켓: {item.market}
@@ -356,7 +482,8 @@ export function InvestmentCalculator() {
                   </div>
                   <button
                     onClick={() => loadHistoryItem(item)}
-                    className="mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300"
+                    className="mt-2 bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300"
+                    style={{ fontSize: `${fontSize * 0.75}px` }}
                   >
                     불러오기
                   </button>
@@ -367,49 +494,19 @@ export function InvestmentCalculator() {
         </div>
       )}
 
-      {/* 업비트 수수료 정보 */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-blue-200 dark:border-blue-800">
-        <div className="flex items-center gap-2 mb-3">
-          <Calculator className="text-blue-600 dark:text-blue-400" size={20} />
-          <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 transition-colors duration-300">
-            업비트 수수료 정보 (2025년 기준)
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 gap-4 text-sm">
-          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
-            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
-              KRW 마켓
-            </div>
-            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
-              0.05% (할인 중)
-            </div>
-          </div>
-          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
-            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
-              BTC/USDT 마켓
-            </div>
-            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
-              0.25%
-            </div>
-          </div>
-          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
-            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
-              원화 출금
-            </div>
-            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
-              1,000원
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* 입력 폼 */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
-        <div className="space-y-6" style={{ fontSize: `${fontSize}px` }}>
+        <div className="space-y-6">
           <div>
-            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-3 transition-colors duration-300">
-              투자원금 (원)
+            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 transition-colors duration-300">
+              최초 매수금액 (원)
             </label>
+            <p
+              className="text-gray-500 dark:text-gray-400 mb-3 transition-colors duration-300"
+              style={{ fontSize: `${fontSize * 0.75}px` }}
+            >
+              처음 코인을 구매할 때 사용한 전체 금액 (매수 수수료 계산 기준)
+            </p>
             <input
               type="text"
               inputMode="numeric"
@@ -418,19 +515,27 @@ export function InvestmentCalculator() {
               onChange={(e) => handleNumberInput(e.target.value, setPrincipal)}
               placeholder="예: 54,000,000"
               className="w-full p-4 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-xl text-right font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors duration-300"
-              style={{ fontSize: `${fontSize}px` }}
             />
             {principal && (
-              <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-right transition-colors duration-300">
+              <div
+                className="text-gray-500 dark:text-gray-400 mt-2 text-right transition-colors duration-300"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 {numberToKorean(parseInt(principal.replace(/,/g, '')))}
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-3 transition-colors duration-300">
-              수익률 (%)
+            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 transition-colors duration-300">
+              현재 수익률 (%)
             </label>
+            <p
+              className="text-gray-500 dark:text-gray-400 mb-3 transition-colors duration-300"
+              style={{ fontSize: `${fontSize * 0.75}px` }}
+            >
+              코인 가격이 얼마나 상승했는지 (예: 10% 상승했다면 10 입력)
+            </p>
             <input
               type="number"
               inputMode="decimal"
@@ -439,14 +544,19 @@ export function InvestmentCalculator() {
               placeholder="예: 2"
               step="0.1"
               className="w-full p-4 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-xl text-right font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors duration-300"
-              style={{ fontSize: `${fontSize}px` }}
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-3 transition-colors duration-300">
-              매도금액 (원)
+            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-2 transition-colors duration-300">
+              매도하려는 금액 (원)
             </label>
+            <p
+              className="text-gray-500 dark:text-gray-400 mb-3 transition-colors duration-300"
+              style={{ fontSize: `${fontSize * 0.75}px` }}
+            >
+              현재 코인 가격 기준으로 팔고 싶은 금액 (매도 수수료 계산 기준)
+            </p>
             <input
               type="text"
               inputMode="numeric"
@@ -455,10 +565,12 @@ export function InvestmentCalculator() {
               onChange={(e) => handleNumberInput(e.target.value, setSellAmount)}
               placeholder="예: 10,000,000"
               className="w-full p-4 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-xl text-right font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors duration-300"
-              style={{ fontSize: `${fontSize}px` }}
             />
             {sellAmount && (
-              <div className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-right transition-colors duration-300">
+              <div
+                className="text-gray-500 dark:text-gray-400 mt-2 text-right transition-colors duration-300"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 {numberToKorean(parseInt(sellAmount.replace(/,/g, '')))}
               </div>
             )}
@@ -472,7 +584,6 @@ export function InvestmentCalculator() {
               value={market}
               onChange={(e) => setMarket(e.target.value)}
               className="w-full p-4 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-xl font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors duration-300"
-              style={{ fontSize: `${fontSize}px` }}
             >
               <option value="KRW">KRW 마켓 (0.05%)</option>
               <option value="BTC">BTC 마켓 (0.25%)</option>
@@ -500,14 +611,12 @@ export function InvestmentCalculator() {
             <button
               onClick={calculateProfit}
               className="flex-1 bg-blue-600 dark:bg-blue-500 text-white py-4 px-6 rounded-xl font-bold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-300"
-              style={{ fontSize: `${fontSize}px` }}
             >
               계산하기
             </button>
             <button
               onClick={reset}
               className="bg-gray-400 dark:bg-slate-600 text-white py-4 px-6 rounded-xl font-bold hover:bg-gray-500 dark:hover:bg-slate-500 transition-colors duration-300"
-              style={{ fontSize: `${fontSize}px` }}
             >
               초기화
             </button>
@@ -519,8 +628,8 @@ export function InvestmentCalculator() {
       {result && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
           <h2
-            className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center transition-colors duration-300"
-            style={{ fontSize: `${Math.max(fontSize * 1.25, 20)}px` }}
+            className="font-bold text-gray-800 dark:text-white mb-4 text-center transition-colors duration-300"
+            style={{ fontSize: `${fontSize * 1.25}px` }}
           >
             업비트 수수료 반영 계산 결과
           </h2>
@@ -531,18 +640,13 @@ export function InvestmentCalculator() {
               <div className="text-red-700 dark:text-red-300 font-semibold mb-2 transition-colors duration-300">
                 수수료 내역
               </div>
-              <div className="space-y-1 text-sm">
+              <div
+                className="space-y-1"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 <div className="flex justify-between">
                   <span className="text-red-600 dark:text-red-400 transition-colors duration-300">
-                    매수 수수료:
-                  </span>
-                  <span className="font-medium text-red-800 dark:text-red-200 transition-colors duration-300">
-                    {formatNumber(Math.round(result.buyFee))}원
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-red-600 dark:text-red-400 transition-colors duration-300">
-                    매도 수수료:
+                    매도 수수료 (매도금액 기준):
                   </span>
                   <span className="font-medium text-red-800 dark:text-red-200 transition-colors duration-300">
                     {formatNumber(Math.round(result.sellFee))}원
@@ -558,16 +662,6 @@ export function InvestmentCalculator() {
                     </span>
                   </div>
                 )}
-                <div className="border-t border-red-200 dark:border-red-700 pt-1 mt-2">
-                  <div className="flex justify-between">
-                    <span className="text-red-700 dark:text-red-300 font-semibold transition-colors duration-300">
-                      총 수수료:
-                    </span>
-                    <span className="font-bold text-red-800 dark:text-red-200 transition-colors duration-300">
-                      {formatNumber(Math.round(result.totalFees))}원
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -575,10 +669,16 @@ export function InvestmentCalculator() {
               <div className="text-green-700 dark:text-green-300 font-semibold mb-1 transition-colors duration-300">
                 수수료 차감 후 실제 수익
               </div>
-              <div className="text-2xl font-bold text-green-800 dark:text-green-200 transition-colors duration-300">
+              <div
+                className="font-bold text-green-800 dark:text-green-200 transition-colors duration-300"
+                style={{ fontSize: `${fontSize * 1.5}px` }}
+              >
                 {formatNumber(Math.round(result.actualProfitAfterFees))}원
               </div>
-              <div className="text-sm text-green-600 dark:text-green-400 mt-1 transition-colors duration-300">
+              <div
+                className="text-green-600 dark:text-green-400 mt-1 transition-colors duration-300"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 {numberToKorean(Math.round(result.actualProfitAfterFees))}
               </div>
             </div>
@@ -587,7 +687,10 @@ export function InvestmentCalculator() {
               <div className="text-blue-700 dark:text-blue-300 font-semibold mb-2 transition-colors duration-300">
                 상세 정보
               </div>
-              <div className="space-y-2 text-sm">
+              <div
+                className="space-y-2"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 <div className="flex justify-between">
                   <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
                     수익 후 총 자산:
@@ -627,7 +730,10 @@ export function InvestmentCalculator() {
               <div className="text-gray-700 dark:text-gray-300 font-semibold mb-2 transition-colors duration-300">
                 매도 후 보유 자산
               </div>
-              <div className="space-y-2 text-sm">
+              <div
+                className="space-y-2"
+                style={{ fontSize: `${fontSize * 0.875}px` }}
+              >
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
                     남은 총 자산:
@@ -636,7 +742,10 @@ export function InvestmentCalculator() {
                     <div className="font-semibold text-gray-900 dark:text-gray-100 transition-colors duration-300">
                       {formatNumber(Math.round(result.remainingTotal))}원
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                    <div
+                      className="text-gray-500 dark:text-gray-400 transition-colors duration-300"
+                      style={{ fontSize: `${fontSize * 0.75}px` }}
+                    >
                       {numberToKorean(Math.round(result.remainingTotal))}
                     </div>
                   </div>
