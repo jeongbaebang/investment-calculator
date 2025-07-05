@@ -1,26 +1,128 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Minus, History, Trash2, Calculator } from 'lucide-react';
 import { numberToKorean } from '@/lib/number-to-korean';
-import { formatNumber } from '@/lib/format-number';
 
 interface CalculationResult {
   totalValue: number;
   totalProfit: number;
   actualProfit: number;
+  actualProfitAfterFees: number;
   sellRatio: number;
   remainingPrincipal: number;
   remainingProfit: number;
   remainingTotal: number;
+  buyFee: number;
+  sellFee: number;
+  withdrawalFee: number;
+  totalFees: number;
 }
+
+interface CalculationHistory {
+  id: string;
+  timestamp: number;
+  principal: string;
+  returnRate: string;
+  sellAmount: string;
+  market: string;
+  includeWithdrawal: boolean;
+  result: CalculationResult;
+}
+
+// 숫자를 천 단위로 콤마 추가
+const formatNumber = (num: number): string => {
+  return num.toLocaleString('ko-KR');
+};
 
 export function InvestmentCalculator() {
   const [principal, setPrincipal] = useState<string>('');
   const [returnRate, setReturnRate] = useState<string>('');
   const [sellAmount, setSellAmount] = useState<string>('');
+  const [market, setMarket] = useState<string>('KRW');
+  const [includeWithdrawal, setIncludeWithdrawal] = useState<boolean>(false);
   const [fontSize, setFontSize] = useState<number>(16);
   const [result, setResult] = useState<CalculationResult | null>(null);
+  const [history, setHistory] = useState<CalculationHistory[]>([]);
+  const [showHistory, setShowHistory] = useState<boolean>(false);
+
+  // 업비트 수수료율 (2025년 기준)
+  const upbitFees = {
+    KRW: 0.05, // 0.05% (할인 중)
+    BTC: 0.25, // 0.25%
+    USDT: 0.25, // 0.25%
+    withdrawal: 1000, // 원화 출금 시 1,000원
+  };
+
+  // localStorage에서 데이터 불러오기
+  useEffect(() => {
+    try {
+      const savedPrincipal = localStorage.getItem('investment-principal');
+      const savedReturnRate = localStorage.getItem('investment-return-rate');
+      const savedSellAmount = localStorage.getItem('investment-sell-amount');
+      const savedMarket = localStorage.getItem('investment-market');
+      const savedIncludeWithdrawal = localStorage.getItem(
+        'investment-include-withdrawal'
+      );
+      const savedFontSize = localStorage.getItem('investment-font-size');
+      const savedResult = localStorage.getItem('investment-result');
+      const savedHistory = localStorage.getItem('investment-history');
+
+      if (savedPrincipal) setPrincipal(savedPrincipal);
+      if (savedReturnRate) setReturnRate(savedReturnRate);
+      if (savedSellAmount) setSellAmount(savedSellAmount);
+      if (savedMarket) setMarket(savedMarket);
+      if (savedIncludeWithdrawal)
+        setIncludeWithdrawal(JSON.parse(savedIncludeWithdrawal));
+      if (savedFontSize) setFontSize(parseInt(savedFontSize));
+      if (savedResult) {
+        setResult(JSON.parse(savedResult));
+      }
+      if (savedHistory) {
+        setHistory(JSON.parse(savedHistory));
+      }
+    } catch (error) {
+      console.error('Failed to load saved data:', error);
+    }
+  }, []);
+
+  // 입력값 변경 시 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem('investment-principal', principal);
+  }, [principal]);
+
+  useEffect(() => {
+    localStorage.setItem('investment-return-rate', returnRate);
+  }, [returnRate]);
+
+  useEffect(() => {
+    localStorage.setItem('investment-sell-amount', sellAmount);
+  }, [sellAmount]);
+
+  useEffect(() => {
+    localStorage.setItem('investment-market', market);
+  }, [market]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      'investment-include-withdrawal',
+      JSON.stringify(includeWithdrawal)
+    );
+  }, [includeWithdrawal]);
+
+  useEffect(() => {
+    localStorage.setItem('investment-font-size', fontSize.toString());
+  }, [fontSize]);
+
+  useEffect(() => {
+    if (result) {
+      localStorage.setItem('investment-result', JSON.stringify(result));
+    }
+  }, [result]);
+
+  useEffect(() => {
+    localStorage.setItem('investment-history', JSON.stringify(history));
+  }, [history]);
 
   const calculateProfit = (): void => {
     const p = parseFloat(principal.replace(/,/g, ''));
@@ -32,27 +134,67 @@ export function InvestmentCalculator() {
       return;
     }
 
-    if (s > p * (1 + r / 100)) {
+    // 매수 수수료 계산
+    const feeRate =
+      (upbitFees[market as keyof typeof upbitFees] as number) / 100;
+    const buyFee = p * feeRate;
+    const actualPrincipal = p - buyFee; // 수수료를 제외한 실제 투자금
+
+    const totalValue = actualPrincipal * (1 + r / 100);
+
+    if (s > totalValue) {
       alert('매도금액이 총 자산 가치보다 클 수 없습니다');
       return;
     }
 
-    const totalValue = p * (1 + r / 100);
     const sellRatio = s / totalValue;
-    const totalProfit = p * (r / 100);
+    const sellFee = s * feeRate; // 매도 수수료
+    const totalProfit = totalValue - actualPrincipal;
     const actualProfit = totalProfit * sellRatio;
-    const remainingPrincipal = p - (s - actualProfit);
-    const remainingProfit = totalProfit - actualProfit;
 
-    setResult({
+    // 출금 수수료
+    const withdrawalFee = includeWithdrawal ? upbitFees.withdrawal : 0;
+
+    // 실제 수익에서 매도 수수료와 출금 수수료 차감
+    const sellPrincipalRatio = (actualPrincipal * sellRatio) / s; // 매도 금액 중 원금 비율
+    const sellProfitRatio = 1 - sellPrincipalRatio; // 매도 금액 중 수익 비율
+
+    const actualProfitAfterFees = s * sellProfitRatio - sellFee - withdrawalFee;
+
+    const remainingPrincipal = actualPrincipal * (1 - sellRatio);
+    const remainingProfit = totalProfit - actualProfit;
+    const totalFees = buyFee + sellFee + withdrawalFee;
+
+    const calculationResult: CalculationResult = {
       totalValue,
       totalProfit,
       actualProfit,
+      actualProfitAfterFees,
       sellRatio: sellRatio * 100,
       remainingPrincipal,
       remainingProfit,
       remainingTotal: remainingPrincipal + remainingProfit,
-    });
+      buyFee,
+      sellFee,
+      withdrawalFee,
+      totalFees,
+    };
+
+    setResult(calculationResult);
+
+    // 계산 히스토리에 추가
+    const historyItem: CalculationHistory = {
+      id: Date.now().toString(),
+      timestamp: Date.now(),
+      principal,
+      returnRate,
+      sellAmount,
+      market,
+      includeWithdrawal,
+      result: calculationResult,
+    };
+
+    setHistory((prev) => [historyItem, ...prev.slice(0, 9)]); // 최대 10개까지 저장
   };
 
   const handleNumberInput = (
@@ -76,14 +218,36 @@ export function InvestmentCalculator() {
     setPrincipal('');
     setReturnRate('');
     setSellAmount('');
+    setMarket('KRW');
+    setIncludeWithdrawal(false);
     setResult(null);
+    localStorage.removeItem('investment-result');
+  };
+
+  const loadHistoryItem = (item: CalculationHistory): void => {
+    setPrincipal(item.principal);
+    setReturnRate(item.returnRate);
+    setSellAmount(item.sellAmount);
+    setMarket(item.market);
+    setIncludeWithdrawal(item.includeWithdrawal);
+    setResult(item.result);
+    setShowHistory(false);
+  };
+
+  const deleteHistoryItem = (id: string): void => {
+    setHistory((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearAllHistory = (): void => {
+    setHistory([]);
+    localStorage.removeItem('investment-history');
   };
 
   return (
-    <>
+    <div className="max-w-4xl mx-auto  space-y-4">
       {/* 폰트 크기 조절 */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2">
           <span className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
             글자 크기:
           </span>
@@ -108,6 +272,134 @@ export function InvestmentCalculator() {
               className="text-gray-700 dark:text-gray-200 transition-colors duration-300"
             />
           </button>
+
+          {/* 히스토리 버튼 */}
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className={`p-2 rounded-lg transition-colors duration-300 border ${
+                showHistory
+                  ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
+                  : 'bg-gray-200 dark:bg-slate-600 border-gray-300 dark:border-slate-500 hover:bg-gray-300 dark:hover:bg-slate-500'
+              }`}
+            >
+              <History
+                size={20}
+                className={`transition-colors duration-300 ${
+                  showHistory
+                    ? 'text-blue-600 dark:text-blue-300'
+                    : 'text-gray-700 dark:text-gray-200'
+                }`}
+              />
+            </button>
+            {history.length > 0 && (
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {history.length}개
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 계산 히스토리 */}
+      {showHistory && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white transition-colors duration-300">
+              계산 기록
+            </h3>
+            {history.length > 0 && (
+              <button
+                onClick={clearAllHistory}
+                className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-300"
+              >
+                전체 삭제
+              </button>
+            )}
+          </div>
+
+          {history.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4 transition-colors duration-300">
+              저장된 계산 기록이 없습니다.
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {history.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg border border-gray-200 dark:border-slate-600 transition-colors duration-300"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
+                      {new Date(item.timestamp).toLocaleString('ko-KR')}
+                    </span>
+                    <button
+                      onClick={() => deleteHistoryItem(item.id)}
+                      className="p-1 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-300"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div className="text-sm space-y-1">
+                    <div className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
+                      원금: {item.principal}원 | 수익률: {item.returnRate}% |
+                      매도: {item.sellAmount}원 | 마켓: {item.market}
+                      {item.includeWithdrawal && ' | 출금수수료 포함'}
+                    </div>
+                    <div className="font-medium text-green-600 dark:text-green-400 transition-colors duration-300">
+                      수수료 후 수익:{' '}
+                      {formatNumber(
+                        Math.round(item.result.actualProfitAfterFees)
+                      )}
+                      원
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => loadHistoryItem(item)}
+                    className="mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors duration-300"
+                  >
+                    불러오기
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 업비트 수수료 정보 */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl shadow-lg p-6 mb-4 transition-colors duration-300 border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center gap-2 mb-3">
+          <Calculator className="text-blue-600 dark:text-blue-400" size={20} />
+          <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 transition-colors duration-300">
+            업비트 수수료 정보 (2025년 기준)
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 gap-4 text-sm">
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
+              KRW 마켓
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              0.05% (할인 중)
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
+              BTC/USDT 마켓
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              0.25%
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-lg transition-colors duration-300">
+            <div className="font-semibold text-gray-800 dark:text-gray-200 transition-colors duration-300">
+              원화 출금
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 transition-colors duration-300">
+              1,000원
+            </div>
+          </div>
         </div>
       </div>
 
@@ -120,6 +412,8 @@ export function InvestmentCalculator() {
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={principal}
               onChange={(e) => handleNumberInput(e.target.value, setPrincipal)}
               placeholder="예: 54,000,000"
@@ -139,6 +433,7 @@ export function InvestmentCalculator() {
             </label>
             <input
               type="number"
+              inputMode="decimal"
               value={returnRate}
               onChange={(e) => setReturnRate(e.target.value)}
               placeholder="예: 2"
@@ -154,6 +449,8 @@ export function InvestmentCalculator() {
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={sellAmount}
               onChange={(e) => handleNumberInput(e.target.value, setSellAmount)}
               placeholder="예: 10,000,000"
@@ -165,6 +462,38 @@ export function InvestmentCalculator() {
                 {numberToKorean(parseInt(sellAmount.replace(/,/g, '')))}
               </div>
             )}
+          </div>
+
+          <div>
+            <label className="block text-gray-700 dark:text-gray-200 font-semibold mb-3 transition-colors duration-300">
+              거래 마켓
+            </label>
+            <select
+              value={market}
+              onChange={(e) => setMarket(e.target.value)}
+              className="w-full p-4 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-xl font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none transition-colors duration-300"
+              style={{ fontSize: `${fontSize}px` }}
+            >
+              <option value="KRW">KRW 마켓 (0.05%)</option>
+              <option value="BTC">BTC 마켓 (0.25%)</option>
+              <option value="USDT">USDT 마켓 (0.25%)</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="includeWithdrawal"
+              checked={includeWithdrawal}
+              onChange={(e) => setIncludeWithdrawal(e.target.checked)}
+              className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 transition-colors duration-300"
+            />
+            <label
+              htmlFor="includeWithdrawal"
+              className="text-gray-700 dark:text-gray-200 font-medium transition-colors duration-300"
+            >
+              원화 출금 수수료 포함 (1,000원)
+            </label>
           </div>
 
           <div className="flex gap-3">
@@ -189,20 +518,68 @@ export function InvestmentCalculator() {
       {/* 결과 표시 */}
       {result && (
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 transition-colors duration-300 border border-gray-100 dark:border-slate-700">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center transition-colors duration-300">
-            계산 결과
+          <h2
+            className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center transition-colors duration-300"
+            style={{ fontSize: `${Math.max(fontSize * 1.25, 20)}px` }}
+          >
+            업비트 수수료 반영 계산 결과
           </h2>
 
           <div className="space-y-4">
+            {/* 수수료 정보 */}
+            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border-l-4 border-red-500 transition-colors duration-300 border dark:border-red-800">
+              <div className="text-red-700 dark:text-red-300 font-semibold mb-2 transition-colors duration-300">
+                수수료 내역
+              </div>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-red-600 dark:text-red-400 transition-colors duration-300">
+                    매수 수수료:
+                  </span>
+                  <span className="font-medium text-red-800 dark:text-red-200 transition-colors duration-300">
+                    {formatNumber(Math.round(result.buyFee))}원
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-red-600 dark:text-red-400 transition-colors duration-300">
+                    매도 수수료:
+                  </span>
+                  <span className="font-medium text-red-800 dark:text-red-200 transition-colors duration-300">
+                    {formatNumber(Math.round(result.sellFee))}원
+                  </span>
+                </div>
+                {includeWithdrawal && (
+                  <div className="flex justify-between">
+                    <span className="text-red-600 dark:text-red-400 transition-colors duration-300">
+                      출금 수수료:
+                    </span>
+                    <span className="font-medium text-red-800 dark:text-red-200 transition-colors duration-300">
+                      {formatNumber(result.withdrawalFee)}원
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-red-200 dark:border-red-700 pt-1 mt-2">
+                  <div className="flex justify-between">
+                    <span className="text-red-700 dark:text-red-300 font-semibold transition-colors duration-300">
+                      총 수수료:
+                    </span>
+                    <span className="font-bold text-red-800 dark:text-red-200 transition-colors duration-300">
+                      {formatNumber(Math.round(result.totalFees))}원
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border-l-4 border-green-500 transition-colors duration-300 border dark:border-green-800">
               <div className="text-green-700 dark:text-green-300 font-semibold mb-1 transition-colors duration-300">
-                실제 수익
+                수수료 차감 후 실제 수익
               </div>
               <div className="text-2xl font-bold text-green-800 dark:text-green-200 transition-colors duration-300">
-                {formatNumber(Math.round(result.actualProfit))}원
+                {formatNumber(Math.round(result.actualProfitAfterFees))}원
               </div>
               <div className="text-sm text-green-600 dark:text-green-400 mt-1 transition-colors duration-300">
-                {numberToKorean(Math.round(result.actualProfit))}
+                {numberToKorean(Math.round(result.actualProfitAfterFees))}
               </div>
             </div>
 
@@ -229,10 +606,18 @@ export function InvestmentCalculator() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                    전체 수익:
+                    수수료 제외 전체 수익:
                   </span>
                   <span className="font-semibold text-gray-900 dark:text-gray-100 transition-colors duration-300">
                     {formatNumber(Math.round(result.totalProfit))}원
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
+                    수수료 제외 전 매도 수익:
+                  </span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 transition-colors duration-300">
+                    {formatNumber(Math.round(result.actualProfit))}원
                   </span>
                 </div>
               </div>
@@ -269,6 +654,6 @@ export function InvestmentCalculator() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
